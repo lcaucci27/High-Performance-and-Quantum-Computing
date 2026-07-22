@@ -1,6 +1,6 @@
 # High Performance and Quantum Computing, QEC Decoder Benchmarking
 
-Final project for the High Performance and Quantum Computing course (MSc in Computer Engineering, University of Naples Federico II, prof. Cilardo, academic year 2024/2025).
+Final project for the High Performance and Quantum Computing course (MSc in Computer Engineering, University of Naples Federico II, prof. Cilardo, academic year 2024/2025, exam sustained on 25/03/2026).
 
 Author: Luigi Caucci (@lcaucci27).
 
@@ -61,9 +61,9 @@ Two run configurations (`evaluation/benchmark.py`):
 
 `config.py` fixes `DISTANCES = [3, 5, 7, 9]`, an 18-point log-spaced physical-error-rate sweep `P_VALUES` between 0.001 and 0.15 (`np.logspace`), `N_SHOTS = 10_000` per (d, p) evaluation point, and per-distance circuit-level pseudo-thresholds `MWPM_PTH = {3: 0.003, 5: 0.007, 7: 0.010, 9: 0.013}` derived experimentally from where the PyMatching curve crosses `y=x` (these differ from the paper's code-level thresholds 0.0825/0.1037/0.1137, which don't apply to circuit-level noise). LLD is trained at `MWPM_PTH[d]`; HLD is trained on three p-values per distance around it (`HLD_TRAIN_P`, e.g. `{3: [0.002, 0.003, 0.005], ...}`) to avoid overfitting to one syndrome density.
 
-**Custom MWPM / PED** (`decoders/custom_mwpm.py`): PyMatching's detector error model is built assuming a fixed `P_ASSUMED = 0.30` regardless of the true `p`, giving an edge weight `log(0.7/0.3) ≈ 0.85` vs. an optimal `≈ 4.6` at `p=0.010` (a 5.4x mismatch). This is deliberately chosen to keep `PM_optimal != Custom_MWPM` disagreement in the 5-12% range for `p` in `[0.004, 0.013]` — enough signal for HLD's residual network to learn from, analogous to the ~10-15% pure-error-decoder error rate the paper reports at `p_th`.
+**Custom MWPM / PED** (`decoders/custom_mwpm.py`): PyMatching's detector error model is built assuming a fixed `P_ASSUMED = 0.30` regardless of the true `p`, giving an edge weight `log(0.7/0.3) ≈ 0.85` vs. an optimal `≈ 4.6` at `p=0.010` (a 5.4x mismatch). This is deliberately chosen to keep `PM_optimal != Custom_MWPM` disagreement in the 5-12% range for `p` in `[0.004, 0.013]`, enough signal for HLD's residual network to learn from, analogous to the ~10-15% pure-error-decoder error rate the paper reports at `p_th`.
 
-**HLD training loop** (`decoders/hld_decoder.py`): target is `PM_optimal(s) XOR PED(s)` (deterministic, zero label noise — using the stochastic ground truth directly would teach the network to always predict 0, since QEC degeneracy makes the true flip non-deterministic for a given syndrome). Loss is `BCEWithLogitsLoss(pos_weight=min(n_neg/n_pos, 40))`, optimized with Adam (`weight_decay=1e-5`) and `CosineAnnealingLR` down to `lr=1e-5`. At inference, if the residual-correction fire rate over a batch exceeds `max_fire_rate` (0.30), HLD falls back to the raw PED prediction rather than risk over-firing.
+**HLD training loop** (`decoders/hld_decoder.py`): target is `PM_optimal(s) XOR PED(s)` (deterministic, zero label noise; using the stochastic ground truth directly would teach the network to always predict 0, since QEC degeneracy makes the true flip non-deterministic for a given syndrome). Loss is `BCEWithLogitsLoss(pos_weight=min(n_neg/n_pos, 40))`, optimized with Adam (`weight_decay=1e-5`) and `CosineAnnealingLR` down to `lr=1e-5`. At inference, if the residual-correction fire rate over a batch exceeds `max_fire_rate` (0.30), HLD falls back to the raw PED prediction rather than risk over-firing.
 
 `evaluation/metrics.py` computes LER (`errors / total shots`), LER/round, and both the pseudo-threshold (`p` where `LER(p) = p`, found via sign-change detection + `brentq` root finding, with a log-log variant for numerical stability) and the decoder threshold (crossing point between two distances' LER curves).
 
