@@ -1,6 +1,6 @@
 # High Performance and Quantum Computing, QEC Decoder Benchmarking
 
-Final project for the High Performance and Quantum Computing course (MSc in Computer Engineering, University of Naples Federico II, prof. Cilardo, academic year 2024/2025, exam sustained on 25/03/2026).
+Final project for the High Performance and Quantum Computing course (MSc in Computer Engineering, University of Naples Federico II, prof. Alessandro Cilardo, academic year 2024/2025, exam sustained on 25/03/2026).
 
 Author: Luigi Caucci (@lcaucci27).
 
