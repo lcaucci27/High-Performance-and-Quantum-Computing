@@ -8,6 +8,10 @@ Author: Luigi Caucci (@lcaucci27).
 
 The goal is to reproduce and benchmark neural-network decoders for quantum error correction (QEC) on the rotated surface code, following Overwater, Babaie & Sebastiano, *Neural-Network Decoders for Quantum Error Correction Using Surface Codes: A Space Exploration of the Hardware Cost-Performance Tradeoff* (arXiv:2202.05741).
 
+A surface code protects one logical qubit by spreading it across a grid of physical qubits, with ancilla qubits measuring local stabilizers to produce a syndrome. Decoding means turning that syndrome into a correction, and the whole point of comparing decoders is how well each one does that job as the code gets bigger (see [docs/neural_network_decoders.md](docs/neural_network_decoders.md) for the full theory writeup).
+
+![Rotated surface code lattice for d = 3. Data qubits sit on the vertices, ancilla qubits measure the X and Z stabilizers on their plaquettes.](docs/images/SurfaceCode-lattice-rotated.png)
+
 We implement and compare four decoders:
 
 - **LLD** (Low-Level Decoder): a feedforward NN that maps the raw ancilla syndrome directly to the predicted logical flip, with no QEC-specific structure at all.
@@ -25,6 +29,8 @@ LLD  >=  Custom MWPM  >=  HLD  >=  PyMatching
 ```
 
 PyMatching knows the real `p`; HLD uses the PED's deterministic residual; LLD has no code structure to exploit at all.
+
+![Low-level vs high-level decoding. LLD (a) maps the syndrome directly to a recovery operator. HLD (b) classifies the syndrome into a logical state L via the neural network, then a lookup table supplies the pure error T; the two combine into the final correction.](docs/images/SurfaceCodeDecoding-LLvsHL.png)
 
 ## What worked and what didn't
 
@@ -148,6 +154,8 @@ Google Sycamore hardware evaluation (Plot C, LER at r=1, synthetic vs hardware f
 ![Plot C CPU](results/final/cpu/plotC_sycamore.png)
 
 GPU-config runs (`h1=512, h2=256`) are in `results/final/gpu/`.
+
+On real hardware, optimal PyMatching with a per-center DEM lands at 1.71% LER (d=3) and 0.86% (d=5), matching Google's published numbers. Fine-tuning on hardware data helps LLD (its d=5 LER drops from ~11% to 5.99%) but hurts HLD (14.75% to 17.16%), because HLD's PED is fixed around `P_ASSUMED=0.30`, an assumption that's wrong for hardware noise, so the residual network ends up "correcting" an already-wrong baseline. Full numbers and both CPU/GPU plots for A, B and C are in [docs/neural_network_decoders.md](docs/neural_network_decoders.md#benchmarks-on-synthetic-data). The write-up also covers two related published approaches not implemented here: a CNN decoder that exploits the lattice's 2D structure (Jung et al.), and an LSTM decoder for variable-length QEC round sequences (Varbanov et al.).
 
 ## Design choices and fidelity to the paper
 
