@@ -163,6 +163,10 @@ Deviations, and why:
 - **80/20 hardware fine-tuning split, 40/60 epochs**: not in the paper, added specifically to measure how much domain adaptation actually buys you.
 - **Per-center DEM for PyMatching on hardware** instead of one averaged DEM: cuts LER by roughly 4x, the paper doesn't specify which DEM Google used.
 
+## Further documentation
+
+[docs/neural_network_decoders.md](docs/neural_network_decoders.md) is a longer write-up covering the theory (surface codes, stabilizers, syndromes, pseudo-threshold), the classical decoders (MWPM, Union-Find), the neural architectures (LLD, HLD, SQNL), a look at two related papers (Jung et al.'s CNN decoder, Varbanov et al.'s LSTM decoder), the full benchmark results with plots, and a critical discussion of what worked and what didn't.
+
 ## Google Sycamore dataset
 
 Dataset: Google Quantum AI, *Nature* 614, 676-681 (2023), distributed on Zenodo as `google_qec3v5_experiment_data`.
